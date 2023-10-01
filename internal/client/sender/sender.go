@@ -76,6 +76,7 @@ func (m *sender) Register(login, password string) error {
 		return err
 	}
 
+	//Нужно разобрать заголовки и забрать токен
 	resp.Header()
 
 	return nil

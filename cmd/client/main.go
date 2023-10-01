@@ -52,7 +52,10 @@ func main() {
 			err := sender.Register(login, password)
 			if err != nil {
 				fmt.Printf("cannot register user: %s\n", err)
+				break
 			}
+
+			fmt.Println("user registration is successful")
 		}
 	}
 
