@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/AntonPashechko/gophkeeper/internal/auth"
-	"github.com/AntonPashechko/gophkeeper/internal/deadline"
 	"github.com/AntonPashechko/gophkeeper/internal/logger"
 	"github.com/AntonPashechko/gophkeeper/internal/server/config"
 	"github.com/AntonPashechko/gophkeeper/internal/server/handlers"
@@ -38,7 +37,7 @@ func Create(cfg *config.Config, storage *storage.KeeperStorage) (*App, error) {
 	//Подключаем middleware логирования
 	router.Use(logger.Middleware)
 	//Подключаем middleware deadline context
-	router.Use(deadline.Middleware)
+	//router.Use(deadline.Middleware)
 
 	keeperHandler := handlers.NewKeeperHandler(storage)
 	keeperHandler.Register(router)

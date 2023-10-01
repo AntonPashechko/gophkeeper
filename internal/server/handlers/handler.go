@@ -35,8 +35,10 @@ func (m *KeeperHandler) Register(r *chi.Mux) {
 		//Добавление новых данных на сервер
 		r.Post("/", m.addNewData)
 		r.Route("/{id}", func(r chi.Router) {
-			//Аутентификация существующего пользователя
+			//Получение ранеее сохраненных данных с сервера
 			r.Get("/", m.getData)
+			//Удаление хранящихся на сервере данных
+			r.Delete("/", m.deleteData)
 		})
 	})
 }
@@ -108,19 +110,55 @@ func (m *KeeperHandler) login(w http.ResponseWriter, r *http.Request) {
 
 func (m *KeeperHandler) addNewData(w http.ResponseWriter, r *http.Request) {
 
+	//Разобрали запрос
+	dataDTO, err := models.NewDTO[models.NewDataDTO](r.Body)
+	if err != nil {
+		m.errorRespond(w, http.StatusBadRequest, fmt.Errorf("cannot decode data dto: %s", err))
+		return
+	}
+
 	//Забираем id пользователя из контекста
 	currentUser := r.Context().Value("user").(string)
-	fmt.Println(currentUser)
 
-	//Разобрали запрос
-	/*dataDTO, err := models.NewDTO[models.NewDataDTO](r.Body)
+	//Добавляем данные в базу
+	err = m.storage.AddData(r.Context(), currentUser, dataDTO)
 	if err != nil {
-		m.errorRespond(w, http.StatusBadRequest, fmt.Errorf("cannot decode auth dto: %s", err))
+		m.errorRespond(w, http.StatusInternalServerError, fmt.Errorf("cannot decode data dto: %s", err))
 		return
-	}*/
+	}
 
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (m *KeeperHandler) getData(w http.ResponseWriter, r *http.Request) {
 
+	//Забираем id пользователя из контекста и идентификатор данных
+	currentUser := r.Context().Value("user").(string)
+	dataId := chi.URLParam(r, "id")
+
+	//Добавляем данные в базу
+	data, err := m.storage.GetData(r.Context(), currentUser, dataId)
+	if err != nil {
+		m.errorRespond(w, http.StatusInternalServerError, fmt.Errorf("cannot get user data: %s", err))
+		return
+	}
+
+	w.Header().Set("Content-Type", "multipart/form-data")
+	w.Write(data)
+}
+
+func (m *KeeperHandler) deleteData(w http.ResponseWriter, r *http.Request) {
+
+	//Забираем id пользователя из контекста и идентификатор данных
+	currentUser := r.Context().Value("user").(string)
+	dataId := chi.URLParam(r, "id")
+
+	//Добавляем данные в базу
+	err := m.storage.DeleteData(r.Context(), currentUser, dataId)
+	if err != nil {
+		m.errorRespond(w, http.StatusInternalServerError, fmt.Errorf("cannot delete user data: %s", err))
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
 }
