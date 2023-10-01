@@ -10,37 +10,32 @@ import (
 	"os"
 )
 
-// Используем шифрование для отправки пароля на сервер
-var encrypt *Encryptor
-
 // Encryptor хранит ключ шифрования и реализует метод шифрования.
 type Encryptor struct {
 	openkey *rsa.PublicKey // ключ шифрования
 }
 
 // InitializeEncryptor разбирает файл с ключом и инициализирует синглтон encrypt.
-func InitializeEncryptor(file string) error {
+func NewEncryptor(file string) (*Encryptor, error) {
 
 	b, err := os.ReadFile(file)
 	if err != nil {
-		return fmt.Errorf("cannot read open key from file: %w", err)
+		return nil, fmt.Errorf("cannot read open key from file: %w", err)
 	}
 
 	keyBlock, _ := pem.Decode(b)
 	if keyBlock == nil {
-		return fmt.Errorf("bad open key blob: %w", err)
+		return nil, fmt.Errorf("bad open key blob: %w", err)
 	}
 
 	pubKey, err := x509.ParsePKCS1PublicKey(keyBlock.Bytes)
 	if err != nil {
-		return fmt.Errorf("cannot parse open key: %w", err)
+		return nil, fmt.Errorf("cannot parse open key: %w", err)
 	}
 
-	encrypt = &Encryptor{
+	return &Encryptor{
 		openkey: pubKey,
-	}
-
-	return nil
+	}, nil
 }
 
 func (m *Encryptor) Encrypt(message []byte) ([]byte, error) {
