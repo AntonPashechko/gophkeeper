@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/AntonPashechko/gophkeeper/internal/auth"
+	"github.com/AntonPashechko/gophkeeper/internal/encrypt"
 	"github.com/AntonPashechko/gophkeeper/internal/logger"
 	"github.com/AntonPashechko/gophkeeper/internal/models"
 	"github.com/AntonPashechko/gophkeeper/internal/storage"
@@ -24,6 +25,7 @@ func NewKeeperHandler(storage *storage.KeeperStorage) KeeperHandler {
 func (m *KeeperHandler) Register(r *chi.Mux) {
 
 	r.Route("/api/user", func(r chi.Router) {
+		r.Use(encrypt.Middleware)
 		//Регистрация нового пользователя
 		r.Post("/register", m.userRegister)
 		//Аутентификация существующего пользователя

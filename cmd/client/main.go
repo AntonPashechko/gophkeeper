@@ -21,7 +21,7 @@ var (
 //go build -ldflags="-X 'main.Version=v1.0.0' -X 'app/build.Time=$(date)'"
 
 func readLine(title string) string {
-	fmt.Print(fmt.Sprintf("Enter %s:", title))
+	fmt.Printf("Enter %s: ", title)
 	line, _ := reader.ReadString('\n')
 	line = strings.TrimSuffix(line, "\r\n")
 	return line
@@ -37,7 +37,7 @@ func main() {
 	}
 
 	sender := sender.NewSender(cfg)
-	if sender.Init() != nil {
+	if err := sender.Init(); err != nil {
 		log.Fatalf("cannot initialize sender: %s\n", err)
 	}
 
@@ -49,7 +49,10 @@ func main() {
 			login := readLine(`login`)
 			password := readLine(`password`)
 
-			fmt.Print(login, password)
+			err := sender.Register(login, password)
+			if err != nil {
+				fmt.Printf("cannot register user: %s\n", err)
+			}
 		}
 	}
 

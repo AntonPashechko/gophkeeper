@@ -60,10 +60,10 @@ func (m *Config) formFile() error {
 func LoadAgentConfig() (*Config, error) {
 	cfg := new(Config)
 	/*Получаем параметры из командной строки*/
-	flag.StringVar(&cfg.ServerEndpoint, "a", "localhost:8080", "server address and port")
+	flag.StringVar(&cfg.ServerEndpoint, "a", "localhost:8033", "server address and port")
 	flag.Int64Var(&cfg.PollInterval, "p", 10, "poll interval")
 	flag.StringVar(&cfg.CryptoKey, "k", "public.rsa", "open crypto key")
-	flag.StringVar(&cfg.ConfigJson, "c", "config.json", "json config")
+	flag.StringVar(&cfg.ConfigJson, "c", "", "json config")
 
 	flag.Parse()
 
