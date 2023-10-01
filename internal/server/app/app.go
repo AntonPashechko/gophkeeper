@@ -13,6 +13,7 @@ import (
 	"github.com/AntonPashechko/gophkeeper/internal/deadline"
 	"github.com/AntonPashechko/gophkeeper/internal/logger"
 	"github.com/AntonPashechko/gophkeeper/internal/server/config"
+	"github.com/AntonPashechko/gophkeeper/internal/server/handlers"
 	"github.com/AntonPashechko/gophkeeper/internal/storage"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -36,13 +37,11 @@ func Create(cfg *config.Config, storage *storage.KeeperStorage) (*App, error) {
 	router := chi.NewRouter()
 	//Подключаем middleware логирования
 	router.Use(logger.Middleware)
-	//Подключаем middleware декомпрессии
-	//router.Use(compress.Middleware)
 	//Подключаем middleware deadline context
 	router.Use(deadline.Middleware)
 
-	//martHandler := handlers.NewMartHandler(storage)
-	//martHandler.Register(router)
+	keeperHandler := handlers.NewKeeperHandler(storage)
+	keeperHandler.Register(router)
 
 	return &App{
 		server: &http.Server{

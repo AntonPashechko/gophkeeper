@@ -29,6 +29,16 @@ func (m *KeeperHandler) Register(r *chi.Mux) {
 		//Аутентификация существующего пользователя
 		r.Post("/login", m.login)
 	})
+
+	r.Route("/api/data", func(r chi.Router) {
+		r.Use(auth.Middleware)
+		//Добавление новых данных на сервер
+		r.Post("/", m.addNewData)
+		r.Route("/{id}", func(r chi.Router) {
+			//Аутентификация существующего пользователя
+			r.Get("/", m.getData)
+		})
+	})
 }
 
 func (m *KeeperHandler) errorRespond(w http.ResponseWriter, code int, err error) {
@@ -94,4 +104,23 @@ func (m *KeeperHandler) login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Authorization", jwt)
+}
+
+func (m *KeeperHandler) addNewData(w http.ResponseWriter, r *http.Request) {
+
+	//Забираем id пользователя из контекста
+	currentUser := r.Context().Value("user").(string)
+	fmt.Println(currentUser)
+
+	//Разобрали запрос
+	/*dataDTO, err := models.NewDTO[models.NewDataDTO](r.Body)
+	if err != nil {
+		m.errorRespond(w, http.StatusBadRequest, fmt.Errorf("cannot decode auth dto: %s", err))
+		return
+	}*/
+
+}
+
+func (m *KeeperHandler) getData(w http.ResponseWriter, r *http.Request) {
+
 }
