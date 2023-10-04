@@ -21,7 +21,7 @@ var (
 //go build -ldflags="-X 'main.Version=v1.0.0' -X 'app/build.Time=$(date)'"
 
 func readLine(title string) string {
-	fmt.Printf("Enter %s: ", title)
+	fmt.Printf(`Enter %s: `, title)
 	line, _ := reader.ReadString('\n')
 	line = strings.TrimSuffix(line, "\r\n")
 	return line
@@ -56,6 +56,18 @@ func main() {
 			}
 
 			fmt.Println("user registration is successful")
+		case `login`:
+			login := readLine(`login`)
+			password := readLine(`password`)
+
+			err := sender.Login(login, password)
+			if err != nil {
+				fmt.Printf("cannot login user: %s\n", err)
+				break
+			}
+
+			fmt.Println("user login is successful")
+		case ``:
 		}
 	}
 
