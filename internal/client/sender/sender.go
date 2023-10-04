@@ -20,10 +20,12 @@ const (
 
 // sender для взаимодействия клиента с сервером
 type sender struct {
-	cfg       *config.Config
-	client    *resty.Client // клиент http
-	encryptor *encrypt.Encryptor
-	token     string
+	cfg       *config.Config     // конфиг приложения
+	client    *resty.Client      // клиент http
+	encryptor *encrypt.Encryptor // объект для шифрования аутентификационных данных на открытом ключе сервера
+	login     string             // логин пользователя (храним для перевыпуска токена)
+	password  string             // пароль пользователя (храним для перевыпуска токена)
+	token     string             // актуальный jwt токен
 }
 
 func NewSender(cfg *config.Config) sender {
@@ -134,6 +136,18 @@ func (m *sender) Login(login, password string) error {
 	if m.token == `` {
 		return fmt.Errorf("authorization header is missing")
 	}
+
+	return nil
+}
+
+func (m *sender) parseAuthorization() error {
+
+	encryptor, err := encrypt.NewEncryptor(m.cfg.CryptoKey)
+	if err != nil {
+		return fmt.Errorf("cannot create credentions encryptor: %w", err)
+	}
+
+	m.encryptor = encryptor
 
 	return nil
 }
