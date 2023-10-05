@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"encoding/base64"
 	"fmt"
 
 	"github.com/AntonPashechko/gophkeeper/internal/models"
@@ -135,14 +134,9 @@ func (m *KeeperStorage) Login(ctx context.Context, dto models.AuthDTO) (string, 
 	return uuid, nil
 }
 
-func (m *KeeperStorage) AddData(ctx context.Context, userId string, dto models.NewDataDTO) error {
+func (m *KeeperStorage) AddData(ctx context.Context, userId string, dataId string, data []byte) error {
 
-	data, err := base64.StdEncoding.DecodeString(dto.Data)
-	if err != nil {
-		return fmt.Errorf("cannot decode data: %w", err)
-	}
-
-	_, err = m.conn.ExecContext(ctx, addData, userId, dto.Id, data)
+	_, err := m.conn.ExecContext(ctx, addData, userId, dataId, data)
 	if err != nil {
 		return fmt.Errorf("cannot execute add new data: %w", err)
 	}
