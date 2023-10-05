@@ -67,8 +67,27 @@ func main() {
 			}
 
 			fmt.Println("user login is successful")
-		case ``:
+		case `add_data`:
+			identifier := readLine(`data identifier`)
+			data := readLine(`data`)
+
+			err := sender.AddNewData(identifier, []byte(data))
+			if err != nil {
+				fmt.Printf("cannot add new user data: %s\n", err)
+				break
+			}
+
+			fmt.Println("user data adding successful")
+		case `get_data`:
+			identifier := readLine(`data identifier`)
+
+			data, err := sender.GetUserData(identifier)
+			if err != nil {
+				fmt.Printf("cannot get user data: %s\n", err)
+				break
+			}
+
+			fmt.Println(string(data))
 		}
 	}
-
 }
