@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/AntonPashechko/gophkeeper/internal/auth"
@@ -32,16 +33,14 @@ func (m *KeeperHandler) Register(r *chi.Mux) {
 		r.Post("/login", m.login)
 	})
 
-	r.Route("/api/data", func(r chi.Router) {
+	r.Route("/api/data/{id}", func(r chi.Router) {
 		r.Use(auth.Middleware)
 		//Добавление новых данных на сервер
 		r.Post("/", m.addNewData)
-		r.Route("/{id}", func(r chi.Router) {
-			//Получение ранеее сохраненных данных с сервера
-			r.Get("/", m.getData)
-			//Удаление хранящихся на сервере данных
-			r.Delete("/", m.deleteData)
-		})
+		//Получение ранеее сохраненных данных с сервера
+		r.Get("/", m.getData)
+		//Удаление хранящихся на сервере данных
+		r.Delete("/", m.deleteData)
 	})
 }
 
@@ -113,9 +112,10 @@ func (m *KeeperHandler) login(w http.ResponseWriter, r *http.Request) {
 func (m *KeeperHandler) addNewData(w http.ResponseWriter, r *http.Request) {
 
 	//Разобрали запрос
-	dataDTO, err := models.NewDTO[models.NewDataDTO](r.Body)
+	dataId := chi.URLParam(r, "id")
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
-		m.errorRespond(w, http.StatusBadRequest, fmt.Errorf("cannot decode data dto: %s", err))
+		m.errorRespond(w, http.StatusBadRequest, fmt.Errorf("cannot read request body: %s", err))
 		return
 	}
 
@@ -123,7 +123,7 @@ func (m *KeeperHandler) addNewData(w http.ResponseWriter, r *http.Request) {
 	currentUser := r.Context().Value("user").(string)
 
 	//Добавляем данные в базу
-	err = m.storage.AddData(r.Context(), currentUser, dataDTO)
+	err = m.storage.AddData(r.Context(), currentUser, dataId, data)
 	if err != nil {
 		m.errorRespond(w, http.StatusInternalServerError, fmt.Errorf("cannot decode data dto: %s", err))
 		return
